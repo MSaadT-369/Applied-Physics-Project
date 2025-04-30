@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Refraction Diagram</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #container {
+        display: flex;
+        gap: 20px;
+      }
+      canvas {
+        border: 1px solid black;
+      }
+      #info-left,
+      #info-right {
+        max-width: 300px;
+        text-align: left;
+        font-size: 14px;
+      }
+      input {
+        margin: 5px;
+      }
+      .material-table {
+        margin-top: 10px;
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .material-table th,
+      .material-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .material-table th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Refraction Simulator</h1>
+    <p>Enter the angle of incidence and refractive indices:</p>
+    <label for="angle">Angle of Incidence (°):</label>
+    <input type="number" id="angle" placeholder="e.g. 30" /><br />
+    <label for="n1">Refractive Index n<sub>1</sub> (Air):</label>
+    <input type="number" id="n1" step="0.01" placeholder="e.g. 1.0" /><br />
+    <label for="n2">Refractive Index n<sub>2</sub> (Water):</label>
+    <input type="number" id="n2" step="0.01" placeholder="e.g. 1.33" /><br />
+    <button onclick="drawRefraction()">Show Diagram</button>
+    <div id="container">
+      <!-- Info Section Left -->
+      <div id="info-left" style="text-align: right">
+        <h2>Understanding Refraction</h2>
+        <p>
+          Refraction is the bending of light as it passes from one medium to
+          another due to a change in its speed. The refractive index determines
+          how much the light will bend; a higher refractive index indicates
+          light will slow down more.
+        </p>
+        <h3>Applications</h3>
+        <p>
+          Refraction plays a crucial role in optics. It's essential in the
+          functioning of lenses that magnify images or focus light in cameras
+          and other optical devices.
+        </p>
+      </div>
+
+      <!-- Canvas Section -->
+      <canvas id="diagram" width="600" height="400"></canvas>
+
+      <!-- Info Section Right -->
+      <div id="info-right" style="text-align: left">
+        <h2>Total Internal Reflection</h2>
+        <p>
+          When light travels from a denser medium (like water) to a rarer medium
+          (like air) at a steep angle, it can reflect back into the denser
+          medium instead of refracting. This phenomenon is known as total
+          internal reflection.
+        </p>
+        <h3>Critical Angle</h3>
+        <p>
+          Total internal reflection occurs when the angle of incidence exceeds a
+          certain critical angle, given by:
+        </p>
+        <p>\( \theta_c = \sin^{-1} \left( \frac{n_2}{n_1} \right) \)</p>
+        <p>
+          Where \( n_1 \) is the index of refraction of the denser medium and \(
+          n_2 \) is the index of refraction of the rarer medium.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      function drawRefraction() {
+        const angleInput = document.getElementById("angle").value;
+        const n1Input = document.getElementById("n1").value;
+        const n2Input = document.getElementById("n2").value;
+
+        const angle = parseFloat(angleInput);
+        const n1 = parseFloat(n1Input);
+        const n2 = parseFloat(n2Input);
+
+        if (isNaN(angle) || isNaN(n1) || isNaN(n2)) {
+          alert("Please enter valid numbers for all fields.");
+          return;
+        }
+
+        const canvas = document.getElementById("diagram");
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the background colors
+        ctx.fillStyle = "#ffffff"; // Air (White)
+        ctx.fillRect(0, 0, canvas.width, 200); // Top half
+        ctx.fillStyle = "#add8e6"; // Water (Light Blue)
+        ctx.fillRect(0, 200, canvas.width, 200); // Bottom half
+
+        // Draw boundary line
+        ctx.beginPath();
+        ctx.moveTo(100, 200);
+        ctx.lineTo(500, 200);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw normal line
+        ctx.beginPath();
+        ctx.moveTo(300, 50);
+        ctx.lineTo(300, 350);
+        ctx.strokeStyle = "blue";
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+
+        // Calculate refraction angles using Snell's Law
+        const angleRad = (Math.PI / 180) * angle; // Convert to radians
+        const sinRefraction1 = Math.sin(angleRad) * (n1 / n2);
+        const sinRefraction2 = Math.sin(angleRad) * (n2 / n1);
+
+        const refractedAngle1 = Math.asin(sinRefraction1) * (180 / Math.PI);
+        const refractedAngle2 = Math.asin(sinRefraction2) * (180 / Math.PI);
+
+        // Draw rays
+        function drawRay(x1, y1, length, angle, color) {
+          const rad = (Math.PI / 180) * angle;
+          const x2 = x1 + length * Math.cos(rad);
+          const y2 = y1 - length * Math.sin(rad);
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = color;
+          ctx.setLineDash([]);
+          ctx.stroke();
+        }
+
+        // Incident ray
+        drawRay(300, 200, 100, -angle, "red");
+
+        // Refracted ray: Denser to rarer
+        if (!isNaN(refractedAngle1)) {
+          drawRay(300, 200, 100, refractedAngle1, "green");
+        }
+
+        // Refracted ray: Rarer to denser
+        if (!isNaN(refractedAngle2)) {
+          drawRay(300, 200, -100, -refractedAngle2, "orange");
+        }
+
+        // Labels
+        ctx.fillStyle = "black";
+        ctx.fillText("Air (n1)", 50, 100);
+        ctx.fillText("Water (n2)", 50, 300);
+        ctx.fillText("Incident Ray", 200, 150);
+        ctx.fillText("Refracted Ray (Denser to Rarer)", 400, 150);
+        ctx.fillText("Refracted Ray (Rarer to Denser)", 400, 250);
+      }
+    </script>
+  </body>
+</html>
