@@ -2,7 +2,9 @@
 
 An interactive web application that visualizes the principles of light refraction using HTML, CSS, and JavaScript.
 
-![Refraction Simulator]() 
+
+
+![Refraction Simulator](![image](https://github.com/user-attachments/assets/7e437469-2742-4269-9faa-fc8ac9cbb105)) 
 *(Replace with actual screenshot)*
 
 ## Features
